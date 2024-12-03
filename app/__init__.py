@@ -6,7 +6,7 @@ import asyncio
 app = FastAPI()
 
 
-@app.websocket("/ws/{group_id}}/barrage")
+@app.websocket("/ws/{group_id}/barrage")
 async def on_ws_barrage_open(websocket: WebSocket, group_id: str):
     await websocket.accept()
     set_channel(group_id, websocket)
