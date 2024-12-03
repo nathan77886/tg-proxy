@@ -2,6 +2,7 @@ from fastapi import FastAPI, WebSocket
 from .bot import *
 from .model import set_channel
 import asyncio
+from loguru import logger
 
 app = FastAPI()
 
@@ -10,6 +11,7 @@ app = FastAPI()
 async def on_ws_barrage_open(websocket: WebSocket, group_id: str):
     await websocket.accept()
     set_channel(group_id, websocket)
+    logger.info(f"{group_id} connect watch")
     while True:
         data = await websocket.receive_text()
         await asyncio.sleep(10)

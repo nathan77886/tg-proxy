@@ -23,10 +23,16 @@ async def on_text_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     group_id = update.effective_chat.id
     channel = get_channel(group_id)
     if not channel:
+        logger.info(f"{group_id} no found chat channel paas")
+        return
+    if not update.message:
+        return
+    if not update.message.text:  # type: ignore
         return
     for ws in channel:
         if ws.state == "connecting":
             continue
+        logger.info(f"send {update.message.text} to {ws.id}")
         await ws.send_json({"type": "text", "data": update.message.text})
 
 
