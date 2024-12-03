@@ -20,6 +20,10 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      
+      - name: lowercase github.repository
+        run: |
+          echo "IMAGE_NAME=${GITHUB_REPOSITORY@L}" >> ${GITHUB_ENV}
 
       - name: Install cosign
         if: github.event_name != 'pull_request'
