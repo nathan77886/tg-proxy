@@ -30,6 +30,7 @@ async def on_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """处理用户发送的id"""
     chat_id = update.effective_chat.id
     user_id = update.effective_user.id
+    logger.info(f"on cmd id from {chat_id}")
     await update.message.reply_text(f"你的id是:{user_id}\n 群组id是:{chat_id}")
 
 logger.info("handler bot")
