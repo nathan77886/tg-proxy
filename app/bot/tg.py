@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from telegram import Update
 from typing import NoReturn
 from .handler import application
-from loguru import logger
 
 def run_bot() -> NoReturn:
     # bot = application.bot.get_me()
