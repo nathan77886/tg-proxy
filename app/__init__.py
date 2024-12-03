@@ -14,3 +14,7 @@ async def on_ws_barrage_open(websocket: WebSocket, group_id: str):
         data = await websocket.receive_text()
         await asyncio.sleep(10)
         await websocket.send_json({"type": "heartbeat"})
+
+@app.get("/hello")
+async def hello():
+    return "hello"
