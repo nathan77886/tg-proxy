@@ -13,8 +13,12 @@ from .app import application
 from loguru import logger
 from ..model import get_channel
 
+
 async def on_text_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_chat.type != constants.ChatType.SUPERGROUP and update.effective_chat.type != constants.ChatType.GROUP:
+    if (
+        update.effective_chat.type != constants.ChatType.SUPERGROUP
+        and update.effective_chat.type != constants.ChatType.GROUP
+    ):
         return
     group_id = update.effective_chat.id
     channel = get_channel(group_id)
@@ -31,7 +35,10 @@ async def on_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     user_id = update.effective_user.id
     logger.info(f"on cmd id from {chat_id}")
-    await update.message.reply_text(f"你的id是:{user_id}\n 群组id是:{chat_id}")
+    await update.message.reply_text(
+        f"你的id是:{user_id}\n 群组id是:<code>{chat_id}</code>", parse_mode="HTML"
+    )
+
 
 logger.info("handler bot")
 application.add_handler(CommandHandler("id", on_id))
