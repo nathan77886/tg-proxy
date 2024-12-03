@@ -31,7 +31,7 @@ async def on_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     user_id = update.effective_user.id
     logger.info(f"on cmd id from {chat_id}")
-    await update.effective_chat.send_message(f"你的id是:{user_id}\n 群组id是:{chat_id}")
+    await update.message.reply_text(f"你的id是:{user_id}\n 群组id是:{chat_id}")
 
 logger.info("handler bot")
 application.add_handler(CommandHandler("id", on_id))
