@@ -28,6 +28,7 @@ def remove_channel(group_id, random_id):
 async def dispatch(group_id, msg):
     global group_channel
     if not group_channel:  # type: ignore
+        logger.error("group channel is empty")
         return
     g_id = str(group_id)
     channel_map = group_channel.get(g_id)
