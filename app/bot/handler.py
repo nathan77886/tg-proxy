@@ -32,7 +32,7 @@ async def on_text_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     for ws in channel:
         if ws.state == "connecting":
             continue
-        logger.info(f"send {update.message.text} to {ws.id}")
+        logger.info(f"send {update.message.text} to client")
         await ws.send_json({"type": "text", "data": update.message.text})
 
 
