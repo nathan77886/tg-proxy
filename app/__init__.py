@@ -16,7 +16,7 @@ async def on_ws_barrage_open(websocket: WebSocket, group_id: str):
     logger.info(f"{group_id} connect watch")
     try:
         while True:
-            await asyncio.sleep(1)
+            await asyncio.sleep(10)
             await websocket.send_json({"type": "heartbeat"})
     except Exception as e:
         logger.info(f"{group_id} disconnect watch")

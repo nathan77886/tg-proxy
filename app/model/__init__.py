@@ -28,14 +28,16 @@ def remove_channel(group_id, random_id):
 async def dispatch(group_id, msg):
     global group_channel
     if not group_channel:  # type: ignore
-        return []
+        return
     g_id = str(group_id)
     channel_map = group_channel.get(g_id)
     if not channel_map:
-        return []
+        logger.error(f"group {g_id} not found")
+        return
     for ws in channel_map.values():
         if ws.state != "connecting":
             continue
+        logger.info(f"dispatch msg to {group_id}")
         try:
             await ws.send_json({"type": "text", "data": msg})
         except Exception as e:
