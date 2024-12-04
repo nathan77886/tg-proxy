@@ -2,12 +2,12 @@ from typing import List
 from fastapi import WebSocket
 
 
-global group_channel
+group_channel = {}
 
 
 def set_channel(group_id, channel: WebSocket):
     g_id = str(group_id)
-    group_channel
+    global group_channel
     if not group_channel:  # type: ignore
         group_channel = {}
     if group_channel.get(g_id):
@@ -17,6 +17,7 @@ def set_channel(group_id, channel: WebSocket):
 
 
 def get_channel(group_id) -> List[WebSocket]:
+    global group_channel
     if not group_channel:  # type: ignore
         return []
     g_id = str(group_id)
