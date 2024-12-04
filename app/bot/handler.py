@@ -11,7 +11,7 @@ from telegram.ext import (
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, constants
 from .app import application
 from loguru import logger
-from ..model import get_channel
+from ..model import dispatch
 
 
 async def on_text_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -21,19 +21,7 @@ async def on_text_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ):
         return
     group_id = update.effective_chat.id
-    channel = get_channel(group_id)
-    if not channel:
-        logger.info(f"{group_id} no found chat channel paas")
-        return
-    if not update.message:
-        return
-    if not update.message.text:  # type: ignore
-        return
-    for ws in channel:
-        if ws.state == "connecting":
-            continue
-        logger.info(f"send {update.message.text} to client")
-        await ws.send_json({"type": "text", "data": update.message.text})
+    await dispatch(group_id, update.message.text)
 
 
 async def on_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
