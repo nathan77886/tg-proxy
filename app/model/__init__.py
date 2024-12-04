@@ -35,9 +35,9 @@ async def dispatch(group_id, msg):
     if not channel_map:
         logger.error(f"group {g_id} not found")
         return
+    length = len(channel_map)
+    logger.info(f"dispatch msg to {g_id} {length}")
     for ws in channel_map.values():
-        if ws.state != "connecting":
-            continue
         logger.info(f"dispatch msg to {group_id}")
         try:
             await ws.send_json({"type": "text", "data": msg})
