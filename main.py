@@ -8,5 +8,6 @@ def start_app():
 
 
 if __name__ == "__main__":
+    # start_app()
     Thread(target=start_app, daemon=True).start()
     run_bot()

@@ -1,5 +1,5 @@
 from fastapi import FastAPI, WebSocket
-from .bot import *
+# from .bot import *
 
 app = FastAPI()
 

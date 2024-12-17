@@ -1,4 +1,4 @@
-from .connection import engine, SessionLocal, Base
+from .connection import engine, SessionLocal, Base, get_session
 from .models import *
 
 # Initialize models

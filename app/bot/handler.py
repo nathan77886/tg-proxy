@@ -33,11 +33,14 @@ async def on_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"你的id是:{user_id}\n 群组id是:<code>{chat_id}</code>", parse_mode="HTML"
     )
 
+import os
+run_bot = os.environ.get("run_bot")
 
-logger.info("handler bot")
-application.add_handler(CommandHandler("id", on_id))
+if not run_bot:
+    logger.info("handler bot")
+    application.add_handler(CommandHandler("id", on_id))
 
-application.add_handler(MessageHandler(filters.TEXT, on_text_message, False))
-from .error_handler import error_handler
+    application.add_handler(MessageHandler(filters.TEXT, on_text_message, False))
+    from .error_handler import error_handler
 
-application.add_error_handler(error_handler)
+    application.add_error_handler(error_handler)
