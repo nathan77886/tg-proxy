@@ -24,6 +24,7 @@ class Room(Base):
         Integer, nullable=False, default=1, comment="房间类型：1-直播，2-会议"
     )
     title = Column(String(255), nullable=False, comment="房间标题")
+    room_name = Column(String(255), nullable=False, comment="房间名称", index=True)
     cover_url = Column(String(500), nullable=True, comment="封面图片URL")
     status = Column(Integer, default=0, comment="状态：0-未开播，1-直播中，2-已结束")
     platform = Column(String(50), nullable=False, comment="平台")
@@ -44,6 +45,7 @@ class Room(Base):
     def create_room(cls, room_name):
         room = cls()
         room.title = room_name
+        room.room_name = room_name
         room.status = 0
         room.created_at = func.now()
         room.room_type = 1
