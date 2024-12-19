@@ -7,7 +7,7 @@ from loguru import logger
 def get_cf_headers():
     headers = {
         'Content-Type': 'application/json',
-        'Authorization': os.getenv('APP_TOKEN')
+        'Authorization': 'Bearer '+os.getenv('APP_TOKEN')
     }
     return headers
 
@@ -25,5 +25,5 @@ async def create_room():
         return {'error': 'Failed to create room'}
     data = res.json()
     session_id = data['sessionId']
-    create_room_db(session_id)
+    await create_room_db(session_id)
     return res.json()

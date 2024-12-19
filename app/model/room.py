@@ -13,6 +13,7 @@ async def create_room(session_id, room_name=""):
         ## 创建房间和映射
         room = Room.create_room(room_name)
         session.add(room)
+        session.commit()
         room_session_mapping = RoomSessionMapping.create_room_session_mapping(room.id, session_id)
         session.add(room_session_mapping)
         session.commit()
