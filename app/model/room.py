@@ -19,3 +19,19 @@ async def create_room(session_id, room_name=""):
         session.commit()
     session.close()
     return room
+
+
+async def get_room(room_name):
+    session = get_session()
+    room = session.query(Room).filter(Room.room_name == room_name).first()
+    session.close()
+    return room
+
+async def get_room_session(room_name):
+    session = get_session()
+    room = session.query(Room).filter(Room.room_name == room_name).first()
+    if room is None:
+        return None
+    room_session_mapping = session.query(RoomSessionMapping).filter(RoomSessionMapping.room_id == room.id).first()
+    session.close()
+    return room_session_mapping.session_id
