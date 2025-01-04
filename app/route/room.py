@@ -1,7 +1,6 @@
 from typing import Dict
 
-from pydantic import Field
-from pydantic.v1 import BaseModel,Json
+from pydantic import Field,BaseModel,Json
 
 from app import app
 import requests
@@ -70,7 +69,11 @@ async def create_room_tracks(room_name: str):
 
 class RoomConfigRequest(BaseModel):
     mode: str = Field(..., description="Mode of the room configuration")
-    api_extra_params: Json = Field(..., description="Extra API parameters")
+    api_extra_params: Dict[str,str] = Field(
+        {},
+        description="Extra parameters to be passed to the API, in JSON format",
+    )
+
 
 @app.post("/room/config/load")
 async def load_room_config(body: RoomConfigRequest = Body()):
