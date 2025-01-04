@@ -71,9 +71,8 @@ class RoomConfigRequest(BaseModel):
     mode: str = Field(..., description="Mode of the room configuration")
     api_extra_params: Dict[str, str] = Field(..., description="Extra API parameters")
 
-
 @app.post("/room/config/load")
-async def load_room_config(room_name: str, request_body: RoomConfigRequest):
+async def load_room_config(body: RoomConfigRequest):
     """Load a room configuration with mode and api_extra_params from the request body."""
 
     ice_servers = await get_ice_server()
@@ -95,10 +94,10 @@ async def load_room_config(room_name: str, request_body: RoomConfigRequest):
     if not max_api_history is None:
         max_api_history = int(max_api_history)
     return {
-        'mode': request_body.mode,
+        'mode': body.mode,
         'userDirectoryUrl': os.getenv('USER_DIRECTORY_URL'),
         'traceLink': os.getenv('TRACE_LINK'),
-        'apiExtraParams': request_body.api_extra_params,
+        'apiExtraParams': body.api_extra_params,
         'iceServers': ice_servers,
         'feedbackEnabled': feedback_enabled,
         'maxWebcamFramerate': max_webcam_framerate,
