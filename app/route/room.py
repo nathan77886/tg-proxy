@@ -1,7 +1,7 @@
 from typing import Dict
 
 from pydantic import Field
-from pydantic.v1 import BaseModel
+from pydantic.v1 import BaseModel,Json
 
 from app import app
 import requests
@@ -9,6 +9,7 @@ import os
 from app.model.room import create_room as create_room_db, get_room_session
 from loguru import logger
 from app.utils.ice_server import get_ice_server
+from fastapi import Body
 
 def get_cf_headers():
     headers = {
@@ -69,10 +70,10 @@ async def create_room_tracks(room_name: str):
 
 class RoomConfigRequest(BaseModel):
     mode: str = Field(..., description="Mode of the room configuration")
-    api_extra_params: Dict[str, str] = Field(..., description="Extra API parameters")
+    api_extra_params: Json = Field(..., description="Extra API parameters")
 
 @app.post("/room/config/load")
-async def load_room_config(body: RoomConfigRequest):
+async def load_room_config(body: RoomConfigRequest = Body()):
     """Load a room configuration with mode and api_extra_params from the request body."""
 
     ice_servers = await get_ice_server()
