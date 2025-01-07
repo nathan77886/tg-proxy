@@ -1,6 +1,6 @@
 from typing import Dict
 
-from pydantic import Field,BaseModel,Json
+from pydantic import Field, BaseModel, Json
 
 from app import app
 import requests
@@ -8,7 +8,10 @@ import os
 from app.model.room import create_room as create_room_db, get_room_session
 from loguru import logger
 from app.utils.ice_server import get_ice_server
-from fastapi import Body
+from fastapi import Body, WebSocket
+import asyncio
+import uuid
+
 
 def get_cf_headers():
     headers = {
@@ -69,7 +72,7 @@ async def create_room_tracks(room_name: str):
 
 class RoomConfigRequest(BaseModel):
     mode: str = Field(..., description="Mode of the room configuration")
-    api_extra_params: Dict[str,str] = Field(
+    api_extra_params: Dict[str, str] = Field(
         {},
         description="Extra parameters to be passed to the API, in JSON format",
     )
@@ -81,31 +84,47 @@ async def load_room_config(body: RoomConfigRequest = Body()):
 
     ice_servers = await get_ice_server()
     feedback_enabled = bool(
-        os.getenv('FEEDBACK_URL') and
-        os.getenv('FEEDBACK_QUEUE') and
-        os.getenv('FEEDBACK_STORAGE')
+        os.getenv("FEEDBACK_URL")
+        and os.getenv("FEEDBACK_QUEUE")
+        and os.getenv("FEEDBACK_STORAGE")
     )
-    max_webcam_framerate = os.getenv('MAX_WEBCAM_FRAMERATE')
+    max_webcam_framerate = os.getenv("MAX_WEBCAM_FRAMERATE")
     if not max_webcam_framerate is None:
         max_webcam_framerate = int(max_webcam_framerate)
-    max_webcam_bitrate = os.getenv('MAX_WEBCAM_BITRATE')
+    max_webcam_bitrate = os.getenv("MAX_WEBCAM_BITRATE")
     if not max_webcam_bitrate is None:
         max_webcam_bitrate = int(max_webcam_bitrate)
-    max_webcam_quality_level = os.getenv('MAX_WEBCAM_QUALITY_LEVEL')
-    max_api_history = os.getenv('MAX_API_HISTORY')
+    max_webcam_quality_level = os.getenv("MAX_WEBCAM_QUALITY_LEVEL")
+    max_api_history = os.getenv("MAX_API_HISTORY")
     if not max_webcam_quality_level is None:
         max_webcam_quality_level = int(max_webcam_quality_level)
     if not max_api_history is None:
         max_api_history = int(max_api_history)
     return {
-        'mode': body.mode,
-        'userDirectoryUrl': os.getenv('USER_DIRECTORY_URL'),
-        'traceLink': os.getenv('TRACE_LINK'),
-        'apiExtraParams': body.api_extra_params,
-        'iceServers': ice_servers,
-        'feedbackEnabled': feedback_enabled,
-        'maxWebcamFramerate': max_webcam_framerate,
-        'maxWebcamBitrate': max_webcam_bitrate,
-        'maxWebcamQualityLevel': max_webcam_quality_level,
-        'maxApiHistory': max_api_history,
+        "mode": body.mode,
+        "userDirectoryUrl": os.getenv("USER_DIRECTORY_URL"),
+        "traceLink": os.getenv("TRACE_LINK"),
+        "apiExtraParams": body.api_extra_params,
+        "iceServers": ice_servers,
+        "feedbackEnabled": feedback_enabled,
+        "maxWebcamFramerate": max_webcam_framerate,
+        "maxWebcamBitrate": max_webcam_bitrate,
+        "maxWebcamQualityLevel": max_webcam_quality_level,
+        "maxApiHistory": max_api_history,
     }
+
+
+@app.websocket("/room/{room_name}/keep/{user_name}")
+async def keep_room(websocket: WebSocket, room_name: str, user_name: str):
+    await websocket.accept()
+    if user_name == "":
+        websocket.close()
+        return
+    connect_id = uuid.uuid4().hex
+    try:
+        while True:
+            data = await websocket.receive_json()
+            print("receive:" + str(data))
+    except Exception as e:
+        logger.info(f"{room_name} disconnect watch: {e}")
+        websocket.close()
