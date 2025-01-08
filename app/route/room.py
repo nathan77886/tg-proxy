@@ -1,15 +1,21 @@
 from typing import Dict
 
-from pydantic import Field, BaseModel, Json
+from pydantic import Field, BaseModel
 
 from app import app
 import requests
 import os
-from app.model.room import create_room as create_room_db, get_room_session
+from app.model.room import (
+    create_room as create_room_db,
+    get_room_session,
+    set_room_user_connect,
+    create_user_connect,
+    on_room_message,
+    on_websocket_disconnect,
+)
 from loguru import logger
 from app.utils.ice_server import get_ice_server
-from fastapi import Body, WebSocket
-import asyncio
+from fastapi import Body, WebSocket, WebSocketDisconnect
 import uuid
 
 
@@ -120,11 +126,15 @@ async def keep_room(websocket: WebSocket, room_name: str, user_name: str):
     if user_name == "":
         websocket.close()
         return
-    connect_id = uuid.uuid4().hex
+    connect_id = str(uuid.uuid4().hex)
+    set_room_user_connect(connect_id, websocket)
+    await create_user_connect(connect_id, user_name, room_name)
     try:
         while True:
             data = await websocket.receive_json()
             print("receive:" + str(data))
+            await on_room_message(connect_id, room_name, data)
+    except WebSocketDisconnect:
+        await on_websocket_disconnect(connect_id, room_name)
     except Exception as e:
         logger.info(f"{room_name} disconnect watch: {e}")
-        websocket.close()
