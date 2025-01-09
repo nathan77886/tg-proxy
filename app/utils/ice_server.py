@@ -9,7 +9,7 @@ async def get_ice_server():
         return None
     if turn_service_id is None:
         return None
-    url = f'https://rtc.live.cloudflare.com/v1/turn/keys/${turn_service_id}/credentials/generate'
+    url = f'https://rtc.live.cloudflare.com/v1/turn/keys/{turn_service_id}/credentials/generate'
     headers = {
         "Authorization": f"Bearer {turn_service_token}",
         "Content-Type": "application/json"
