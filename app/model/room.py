@@ -27,7 +27,7 @@ async def create_room(session_id, room_name=""):
             )
             session.add(room_session_mapping)
             session.commit()
-        return room
+        return room.id,room.room_name
 
 
 async def get_room(room_name):
