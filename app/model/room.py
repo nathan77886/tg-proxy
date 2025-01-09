@@ -12,7 +12,6 @@ async def create_room(session_id, room_name=""):
         ## 随机8位字符串
         room_name = "".join(random.sample(string.ascii_letters + string.digits, 8))
     with get_session() as session:
-        session = get_session()
         room = (
             session.query(RoomSessionMapping)
             .filter(RoomSessionMapping.session_id == session_id)
