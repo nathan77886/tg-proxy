@@ -43,6 +43,12 @@ async def create_room():
     room_id,room_name = await create_room_db(session_id)
     return {"room_id": room_id, "session_id": session_id, "room_name": room_name}
 
+@app.get("/room/session/{room_name}")
+async def get_room_session_by_room_name(room_name: str):
+    """Get the session id of a room."""
+    session_id = await get_room_session(room_name)
+    return {"session_id": session_id}
+
 
 @app.get("/room/session/tracks/{room_name}")
 async def get_room_tracks(room_name: str):
