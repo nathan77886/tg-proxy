@@ -15,7 +15,7 @@ from app.model.room import (
 )
 from loguru import logger
 from app.utils.ice_server import get_ice_server
-from fastapi import Body, WebSocket, WebSocketDisconnect
+from fastapi import Body, WebSocket, WebSocketDisconnect, Request
 import uuid
 
 
@@ -40,8 +40,9 @@ async def create_room():
         return {"error": "Failed to create room"}
     data = res.json()
     session_id = data["sessionId"]
-    room_id,room_name = await create_room_db(session_id)
+    room_id, room_name = await create_room_db(session_id)
     return {"room_id": room_id, "session_id": session_id, "room_name": room_name}
+
 
 @app.get("/room/session/{room_name}")
 async def get_room_session_by_room_name(room_name: str):
@@ -51,9 +52,10 @@ async def get_room_session_by_room_name(room_name: str):
 
 
 @app.get("/room/session/tracks/{room_name}")
-async def get_room_tracks(room_name: str):
+async def get_room_tracks(room_name: str, request):
     """Get the tracks of a room."""
     session_id = await get_room_session(room_name)
+
     if session_id is None:
         return {"error": "Room not found"}
     app_id = os.getenv("APP_ID")
@@ -67,13 +69,13 @@ async def get_room_tracks(room_name: str):
 
 
 @app.post("/room/session/tracks/{room_name}/new")
-async def create_room_tracks(room_name: str):
+async def create_room_tracks(room_name: str, request: Request):
     """Create a new track in a room."""
     session_id = await get_room_session(room_name)
     if session_id is None:
         return {"error": "Room not found"}
     app_id = os.getenv("APP_ID")
-    url = f"https://rtc.live.cloudflare.com/apps/{app_id}/sessions/{session_id}/tracks/new"
+    url = f"https://rtc.live.cloudflare.com/apps/{app_id}/sessions/{session_id}/tracks/new?{request.url.query}"
     headers = get_cf_headers()
     res = requests.post(url, headers=headers)
     if res.status_code != 200:
