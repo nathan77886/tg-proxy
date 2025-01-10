@@ -104,7 +104,7 @@ async def load_room_config(body: RoomConfigRequest = Body()):
         and os.getenv("FEEDBACK_STORAGE")
     )
     max_webcam_framerate = os.getenv("MAX_WEBCAM_FRAMERATE",24)
-    max_webcam_bitrate = os.getenv("MAX_WEBCAM_BITRATE",1_200_000)
+    max_webcam_bitrate = os.getenv("MAX_WEBCAM_BITRATE",1200000)
     max_webcam_quality_level = os.getenv("MAX_WEBCAM_QUALITY_LEVEL",1080)
     max_api_history = os.getenv("MAX_API_HISTORY",100)
     return {
