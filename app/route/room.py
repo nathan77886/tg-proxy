@@ -59,7 +59,7 @@ async def get_room_tracks(room_name: str, request):
     if session_id is None:
         return {"error": "Room not found"}
     app_id = os.getenv("APP_ID")
-    url = f"https://rtc.live.cloudflare.com/apps/{app_id}/sessions/{session_id}"
+    url = f"https://rtc.live.cloudflare.com/apps/{app_id}/sessions/{session_id}?{request.url.query}"
     headers = get_cf_headers()
     res = requests.get(url, headers=headers)
     if res.status_code != 200:
