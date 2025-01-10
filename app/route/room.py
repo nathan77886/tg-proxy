@@ -48,7 +48,7 @@ async def create_room(request: Request):
 async def get_room_session_by_room_name(room_name: str):
     """Get the session id of a room."""
     session_id = await get_room_session(room_name)
-    return {"session_id": session_id}
+    return {"sessionId": session_id}
 
 
 @app.get("/room/session/tracks/{room_name}")
