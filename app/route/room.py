@@ -41,7 +41,7 @@ async def create_room(request: Request):
     data = res.json()
     session_id = data["sessionId"]
     room_id, room_name = await create_room_db(session_id)
-    return {"room_id": room_id, "session_id": session_id, "room_name": room_name}
+    return {"room_id": room_id, "sessionId": session_id, "room_name": room_name}
 
 
 @app.get("/room/session/{room_name}")
