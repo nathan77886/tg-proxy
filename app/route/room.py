@@ -103,18 +103,10 @@ async def load_room_config(body: RoomConfigRequest = Body()):
         and os.getenv("FEEDBACK_QUEUE")
         and os.getenv("FEEDBACK_STORAGE")
     )
-    max_webcam_framerate = os.getenv("MAX_WEBCAM_FRAMERATE")
-    if not max_webcam_framerate is None:
-        max_webcam_framerate = int(max_webcam_framerate)
-    max_webcam_bitrate = os.getenv("MAX_WEBCAM_BITRATE")
-    if not max_webcam_bitrate is None:
-        max_webcam_bitrate = int(max_webcam_bitrate)
-    max_webcam_quality_level = os.getenv("MAX_WEBCAM_QUALITY_LEVEL")
-    max_api_history = os.getenv("MAX_API_HISTORY")
-    if not max_webcam_quality_level is None:
-        max_webcam_quality_level = int(max_webcam_quality_level)
-    if not max_api_history is None:
-        max_api_history = int(max_api_history)
+    max_webcam_framerate = os.getenv("MAX_WEBCAM_FRAMERATE",24)
+    max_webcam_bitrate = os.getenv("MAX_WEBCAM_BITRATE",1_200_000)
+    max_webcam_quality_level = os.getenv("MAX_WEBCAM_QUALITY_LEVEL",1080)
+    max_api_history = os.getenv("MAX_API_HISTORY",100)
     return {
         "mode": body.mode,
         "userDirectoryUrl": os.getenv("USER_DIRECTORY_URL"),
