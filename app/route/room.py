@@ -15,7 +15,7 @@ from app.model.room import (
 )
 from loguru import logger
 from app.utils.ice_server import get_ice_server
-from fastapi import Body, WebSocket, WebSocketDisconnect, Request
+from fastapi import Body, Query, WebSocket, WebSocketDisconnect, Request
 import uuid
 
 
@@ -122,16 +122,12 @@ async def load_room_config(body: RoomConfigRequest = Body()):
 
 
 @app.websocket("/room/keep/{user_name}/parties/rooms/{room_name}")
-async def keep_room(websocket: WebSocket, room_name: str, user_name: str):
+async def keep_room(websocket: WebSocket, room_name: str, user_name: str, _pk:str=Query(..., alias="pk")):
     await websocket.accept()
     if user_name == "":
-        websocket.close()
+        await websocket.close()
         return
-    while 1:
-        id_json = await websocket.receive_json()
-        if id_json["type"] == "id":
-            break
-    connect_id = id_json["id"]
+    connect_id = _pk
     set_room_user_connect(connect_id, websocket)
     await create_user_connect(connect_id, user_name, room_name)
     try:
