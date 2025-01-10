@@ -128,6 +128,7 @@ async def keep_room(websocket: WebSocket, room_name: str, user_name: str, _pk:st
         await websocket.close()
         return
     connect_id = _pk
+    logger.info(f"user {user_name} join room {room_name} connect with conn id: {connect_id}")
     set_room_user_connect(connect_id, websocket)
     await create_user_connect(connect_id, user_name, room_name)
     try:
