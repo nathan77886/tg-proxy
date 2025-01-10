@@ -127,7 +127,11 @@ async def keep_room(websocket: WebSocket, room_name: str, user_name: str):
     if user_name == "":
         websocket.close()
         return
-    connect_id = str(uuid.uuid4().hex)
+    while 1:
+        id_json = await websocket.receive_json()
+        if id_json["type"] == "id":
+            break
+    connect_id = id_json["id"]
     set_room_user_connect(connect_id, websocket)
     await create_user_connect(connect_id, user_name, room_name)
     try:
