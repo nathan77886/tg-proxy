@@ -74,10 +74,11 @@ async def create_room_tracks(room_name: str, request: Request):
     session_id = await get_room_session(room_name)
     if session_id is None:
         return {"error": "Room not found"}
+    body_json = await request.json()
     app_id = os.getenv("APP_ID")
     url = f"https://rtc.live.cloudflare.com/apps/{app_id}/sessions/{session_id}/tracks/new?{request.url.query}"
     headers = get_cf_headers()
-    res = requests.post(url, headers=headers)
+    res = requests.post(url, json=body_json, headers=headers)
     if res.status_code != 200:
         logger.error(f"Failed to create track: {res.text}")
         return {"error": "Failed to create track"}
