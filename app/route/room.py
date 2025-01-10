@@ -122,7 +122,7 @@ async def load_room_config(body: RoomConfigRequest = Body()):
 
 
 @app.websocket("/room/keep/{user_name}/parties/rooms/{room_name}")
-async def keep_room(websocket: WebSocket, room_name: str, user_name: str, _pk:str=Query(..., alias="pk")):
+async def keep_room(websocket: WebSocket, room_name: str, user_name: str, _pk:str=Query()):
     await websocket.accept()
     if user_name == "":
         await websocket.close()
