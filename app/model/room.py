@@ -138,7 +138,7 @@ async def broadcast_room_state(room_name):
 async def on_room_message(conn_id, room_name, message):
     from app.db.redis import redis_conn, expire_time_7_day
 
-    msg_type = message["data"]
+    msg_type = message["type"]
     if msg_type == "userLeft":
         if conn_id in room_user2connects:
             room_user2connects[conn_id].close(1000)
