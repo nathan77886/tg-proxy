@@ -28,11 +28,11 @@ def get_cf_headers():
 
 
 @app.post("/room/create")
-async def create_room():
+async def create_room(request: Request):
     """Create a new room."""
     app_id = os.getenv("APP_ID")
 
-    url = f"https://rtc.live.cloudflare.com/apps/{app_id}/sessions/new"
+    url = f"https://rtc.live.cloudflare.com/apps/{app_id}/sessions/new?{request.url.query}"
     headers = get_cf_headers()
     res = requests.post(url, headers=headers)
     if res.status_code != 201:
