@@ -122,7 +122,7 @@ async def broadcast_room_state(room_name):
             try:
                 await ws_conn.send_json(room_state)
             except Exception as e:
-                ws_conn.close(1011)
+                await ws_conn.close(1011)
                 logger.error(f"{conn_id} 断开连接,roomer:{room_name},err:{e}")
                 did_someone_quit = True
                 redis_conn.hdel(room2conn_rkey, conn_id)
@@ -142,7 +142,7 @@ async def on_room_message(conn_id, room_name, message):
     msg_type = message["type"]
     if msg_type == "userLeft":
         if conn_id in room_user2connects:
-            room_user2connects[conn_id].close(1000)
+            await room_user2connects[conn_id].close(1000)
         await on_websocket_disconnect(conn_id, room_name)
         return
     if msg_type == "userUpdate":

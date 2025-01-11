@@ -100,7 +100,7 @@ async def renegotiate_room_tracks(room_name: str, request: Request):
         return {"error": "Room not found"}
     body_json = await request.json()
     app_id = os.getenv("APP_ID")
-    url = f"https://rtc.live.cloudflare.com/apps/{app_id}/sessions/{session_id}/tracks/renegotiate?{request.url.query}"
+    url = f"https://rtc.live.cloudflare.com/apps/{app_id}/sessions/{session_id}/renegotiate?{request.url.query}"
     headers = get_cf_headers()
     logger.info(f"Renegotiate room tracks: {url}, {body_json}")
     res = requests.put(url, json=body_json, headers=headers)
