@@ -146,7 +146,7 @@ async def on_room_message(conn_id, room_name, message):
         await on_websocket_disconnect(conn_id, room_name)
         return
     if msg_type == "userUpdate":
-        user_data = message["data"]
+        user_data = message["user"]
         user_data["room_name"] = room_name
         redis_conn.set(
             f"tgproxy:session:{conn_id}",
