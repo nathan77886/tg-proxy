@@ -50,13 +50,9 @@ async def get_room_session_by_room_name(room_name: str):
     return {"sessionId": session_id}
 
 
-@app.get("/room/session/tracks/{room_name}")
-async def get_room_tracks(room_name: str, request):
+@app.get("/room/session/tracks/{session_id}")
+async def get_room_tracks(session_id: str, request):
     """Get the tracks of a room."""
-    session_id = await get_room_session(room_name)
-
-    if session_id is None:
-        return {"error": "Room not found"}
     app_id = os.getenv("APP_ID")
     url = f"https://rtc.live.cloudflare.com/apps/{app_id}/sessions/{session_id}?{request.url.query}"
     headers = get_cf_headers()
@@ -90,12 +86,9 @@ class RoomConfigRequest(BaseModel):
         description="Extra parameters to be passed to the API, in JSON format",
     )
 
-@app.put("/room/session/tracks/{room_name}/renegotiate")
-async def renegotiate_room_tracks(room_name: str, request: Request):
+@app.put("/room/session/tracks/{session_id}/renegotiate")
+async def renegotiate_room_tracks(session_id: str, request: Request):
     """Renegotiate a room configuration with mode and api_extra_params from the request body."""
-    session_id = await get_room_session(room_name)
-    if session_id is None:
-        return {"error": "Room not found"}
     body_json = await request.json()
     app_id = os.getenv("APP_ID")
     url = f"https://rtc.live.cloudflare.com/apps/{app_id}/sessions/{session_id}/renegotiate?{request.url.query}"
@@ -107,12 +100,9 @@ async def renegotiate_room_tracks(room_name: str, request: Request):
     return res.json()
 
 
-@app.put("/room/session/tracks/{room_name}/close")
-async def close_room_tracks(room_name: str, request: Request):
+@app.put("/room/session/tracks/{session_id}/close")
+async def close_room_tracks(session_id: str, request: Request):
     """Close a room configuration with mode and api_extra_params from the request body."""
-    session_id = await get_room_session(room_name)
-    if session_id is None:
-        return {"error": "Room not found"}
     body_json = await request.json()
     app_id = os.getenv("APP_ID")
     url = f"https://rtc.live.cloudflare.com/apps/{app_id}/sessions/{session_id}/tracks/close?{request.url.query}"
