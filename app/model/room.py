@@ -95,7 +95,8 @@ async def on_websocket_disconnect(conn_id, room_name):
     redis_conn.delete(f"tgproxy:heartbeat:${conn_id}")
     room2conn_rkey = f"tgproxy:room:session:{room_name}"
     redis_conn.hdel(room2conn_rkey, conn_id)
-    del room_user2connects[conn_id]
+    if conn_id in room_user2connects:
+        del room_user2connects[conn_id]
     await broadcast_room_state(room_name)
     logger.info(f"{conn_id} 断开连接,roomer:{room_name}")
 
