@@ -15,7 +15,7 @@ from app.model.room import (
 )
 from loguru import logger
 from app.utils.ice_server import get_ice_server
-from fastapi import Body, Query, WebSocket, WebSocketDisconnect, Request
+from fastapi import Body, Query, WebSocket, WebSocketDisconnect, Request, HTTPException
 import uuid
 
 
@@ -82,6 +82,8 @@ async def create_room_tracks(room_name: str, request: Request):
     res = requests.post(url, json=body_json, headers=headers)
     if res.status_code != 200:
         logger.error(f"Failed to create track: {res.text}")
+        ## 返回500
+        raise HTTPException(status_code=500, detail=res.json())
     return res.json()
 
 
