@@ -16,7 +16,6 @@ from app.model.room import (
 from loguru import logger
 from app.utils.ice_server import get_ice_server
 from fastapi import Body, Query, WebSocket, WebSocketDisconnect, Request, HTTPException
-import uuid
 
 
 def get_cf_headers():
@@ -68,12 +67,9 @@ async def get_room_tracks(room_name: str, request):
     return res.json()
 
 
-@app.post("/room/session/tracks/{room_name}/new")
-async def create_room_tracks(room_name: str, request: Request):
+@app.post("/room/session/tracks/{session_id}/new")
+async def create_room_tracks(session_id: str, request: Request):
     """Create a new track in a room."""
-    session_id = await get_room_session(room_name)
-    if session_id is None:
-        return {"error": "Room not found"}
     body_json = await request.json()
     app_id = os.getenv("APP_ID")
     url = f"https://rtc.live.cloudflare.com/apps/{app_id}/sessions/{session_id}/tracks/new?{request.url.query}"
