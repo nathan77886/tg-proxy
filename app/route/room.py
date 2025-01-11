@@ -167,7 +167,7 @@ async def keep_room(websocket: WebSocket, room_name: str, user_name: str, _pk:st
     try:
         while True:
             data = await websocket.receive_json()
-            print("receive:" + str(data))
+            print(f"{user_name} receive:" + str(data))
             await on_room_message(connect_id, room_name, data)
     except WebSocketDisconnect:
         await on_websocket_disconnect(connect_id, room_name)

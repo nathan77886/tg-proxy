@@ -58,7 +58,7 @@ async def create_user_connect(conn_id, user_name, room_name):
     from app.db.redis import redis_conn, expire_time_7_day
 
     user = redis_conn.get(f"tgproxy:session-{conn_id}")
-    if user == None:
+    if user is None:
         new_user_session = {
             "id": conn_id,
             "name": user_name,
@@ -116,6 +116,7 @@ async def broadcast_room_state(room_name):
     }
     for cid, user_state in room_users.items():
         room_state["state"]["users"].append(json.loads(user_state))
+    for cid, user_state in room_users.items():
         conn_id = cid.decode()
         if conn_id in room_user2connects:
             ws_conn = room_user2connects[conn_id]
