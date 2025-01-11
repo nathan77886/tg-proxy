@@ -103,10 +103,10 @@ async def renegotiate_room_tracks(room_name: str, request: Request):
     url = f"https://rtc.live.cloudflare.com/apps/{app_id}/sessions/{session_id}/tracks/renegotiate?{request.url.query}"
     headers = get_cf_headers()
     logger.info(f"Renegotiate room tracks: {url}, {body_json}")
-    res = requests.post(url, json=body_json, headers=headers)
+    res = requests.put(url, json=body_json, headers=headers)
     if res.status_code != 200:
         logger.error(f"Failed to renegotiate track: {res.text}")
-    return res.text
+    return res.json()
 
 
 @app.put("/room/session/tracks/{room_name}/close")
@@ -120,7 +120,7 @@ async def close_room_tracks(room_name: str, request: Request):
     url = f"https://rtc.live.cloudflare.com/apps/{app_id}/sessions/{session_id}/tracks/close?{request.url.query}"
     headers = get_cf_headers()
     logger.info(f"Close room tracks: {url}, {body_json}")
-    res = requests.post(url, json=body_json, headers=headers)
+    res = requests.put(url, json=body_json, headers=headers)
     if res.status_code != 200:
         logger.error(f"Failed to close track: {res.text}")
     return res.json()
