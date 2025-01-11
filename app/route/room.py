@@ -106,7 +106,7 @@ async def renegotiate_room_tracks(room_name: str, request: Request):
     res = requests.post(url, json=body_json, headers=headers)
     if res.status_code != 200:
         logger.error(f"Failed to renegotiate track: {res.text}")
-    return res.json()
+    return res.text
 
 
 @app.put("/room/session/tracks/{room_name}/close")
