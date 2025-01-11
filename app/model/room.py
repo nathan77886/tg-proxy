@@ -123,7 +123,6 @@ async def broadcast_room_state(room_name):
             try:
                 await ws_conn.send_json(room_state)
             except Exception as e:
-                await ws_conn.close(1011)
                 logger.error(f"{conn_id} 断开连接,roomer:{room_name},err:{e}")
                 did_someone_quit = True
                 redis_conn.hdel(room2conn_rkey, conn_id)
