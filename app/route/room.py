@@ -92,6 +92,39 @@ class RoomConfigRequest(BaseModel):
         description="Extra parameters to be passed to the API, in JSON format",
     )
 
+@app.put("/room/session/tracks/{room_name}/renegotiate")
+async def renegotiate_room_tracks(room_name: str, request: Request):
+    """Renegotiate a room configuration with mode and api_extra_params from the request body."""
+    session_id = await get_room_session(room_name)
+    if session_id is None:
+        return {"error": "Room not found"}
+    body_json = await request.json()
+    app_id = os.getenv("APP_ID")
+    url = f"https://rtc.live.cloudflare.com/apps/{app_id}/sessions/{session_id}/tracks/renegotiate?{request.url.query}"
+    headers = get_cf_headers()
+    logger.info(f"Renegotiate room tracks: {url}, {body_json}")
+    res = requests.post(url, json=body_json, headers=headers)
+    if res.status_code != 200:
+        logger.error(f"Failed to renegotiate track: {res.text}")
+    return res.json()
+
+
+@app.put("/room/session/tracks/{room_name}/close")
+async def close_room_tracks(room_name: str, request: Request):
+    """Close a room configuration with mode and api_extra_params from the request body."""
+    session_id = await get_room_session(room_name)
+    if session_id is None:
+        return {"error": "Room not found"}
+    body_json = await request.json()
+    app_id = os.getenv("APP_ID")
+    url = f"https://rtc.live.cloudflare.com/apps/{app_id}/sessions/{session_id}/tracks/close?{request.url.query}"
+    headers = get_cf_headers()
+    logger.info(f"Close room tracks: {url}, {body_json}")
+    res = requests.post(url, json=body_json, headers=headers)
+    if res.status_code != 200:
+        logger.error(f"Failed to close track: {res.text}")
+    return res.json()
+
 
 @app.post("/room/config/load")
 async def load_room_config(body: RoomConfigRequest = Body()):
