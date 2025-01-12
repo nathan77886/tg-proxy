@@ -106,7 +106,7 @@ class RoomConfigRequest(BaseModel):
         {},
         description="Extra parameters to be passed to the API, in JSON format",
     )
-
+    room_name:str = Field(..., description="Name of the room")
 
 @app.put("/room/session/tracks/{session_id}/renegotiate")
 async def renegotiate_room_tracks(session_id: str, request: Request):
@@ -150,6 +150,8 @@ async def load_room_config(body: RoomConfigRequest = Body()):
     max_webcam_bitrate = os.getenv("MAX_WEBCAM_BITRATE", 1200000)
     max_webcam_quality_level = os.getenv("MAX_WEBCAM_QUALITY_LEVEL", 1080)
     max_api_history = os.getenv("MAX_API_HISTORY", 100)
+    from app.db.redis import redis_conn
+    player_name = redis_conn.get(f"tgproxy:live_room:{body.room_name}")
     return {
         "mode": body.mode,
         "userDirectoryUrl": os.getenv("USER_DIRECTORY_URL"),
@@ -161,6 +163,7 @@ async def load_room_config(body: RoomConfigRequest = Body()):
         "maxWebcamBitrate": max_webcam_bitrate,
         "maxWebcamQualityLevel": max_webcam_quality_level,
         "maxApiHistory": max_api_history,
+        "live_player": player_name
     }
 
 
