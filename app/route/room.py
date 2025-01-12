@@ -35,6 +35,14 @@ class RoomCreateRequest(BaseModel):
 @app.post("/room/create")
 async def create_room(request: Request, body: RoomCreateRequest = Body()):
     """Create a new room."""
+    room_id, room_name = await create_room_db()
+    if body.live_room:
+        await set_live_room(room_name, body.nick_name)
+    return {"room_id": room_id, "room_name": room_name}
+
+
+@app.post("/room/session/{room_name}/create")
+async def create_room_session(room_name: str, request: Request):
     app_id = os.getenv("APP_ID")
 
     url = f"https://rtc.live.cloudflare.com/apps/{app_id}/sessions/new?{request.url.query}"
@@ -46,8 +54,6 @@ async def create_room(request: Request, body: RoomCreateRequest = Body()):
     data = res.json()
     session_id = data["sessionId"]
     room_id, room_name = await create_room_db(session_id)
-    if body.live_room:
-        await set_live_room(room_name, body.nick_name)
     return {"room_id": room_id, "sessionId": session_id, "room_name": room_name}
 
 

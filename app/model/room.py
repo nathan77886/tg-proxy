@@ -10,26 +10,15 @@ from app.db import get_session, Room, RoomSessionMapping
 from app.db.redis import expire_time_7_day
 
 
-async def create_room(session_id, room_name=""):
+async def create_room(room_name=""):
     if room_name == "":
         ## 随机8位字符串
         room_name = "".join(random.sample(string.ascii_letters + string.digits, 8))
     with get_session() as session:
-        room = (
-            session.query(RoomSessionMapping)
-            .filter(RoomSessionMapping.session_id == session_id)
-            .first()
-        )
-        if room is None:
-            ## 创建房间和映射
-            room = Room.create_room(room_name)
-            session.add(room)
-            session.commit()
-            room_session_mapping = RoomSessionMapping.create_room_session_mapping(
-                room.id, session_id
-            )
-            session.add(room_session_mapping)
-            session.commit()
+        ## 创建房间和映射
+        room = Room.create_room(room_name)
+        session.add(room)
+        session.commit()
         return room.id, room.room_name
 
 
