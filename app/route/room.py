@@ -38,7 +38,8 @@ async def create_room(request: Request, body: RoomCreateRequest = Body()):
     room_id, room_name = await create_room_db()
     if body.live_room:
         await set_live_room(room_name, body.nick_name)
-    return {"room_id": room_id, "room_name": room_name}
+        logger.info(f"创建直播模式房间:{room_name},主播:{body.live_room}")
+    return {"room_id": room_id, "room_name": room_name, "live_name":body.live_room}
 
 
 @app.post("/room/session/{room_name}/create")
