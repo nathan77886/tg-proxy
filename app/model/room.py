@@ -1,10 +1,13 @@
-from app.db import get_session, Room, RoomSessionMapping
+import json
 import random
 import string
 from datetime import datetime
-import json
-from loguru import logger
+
 from fastapi import WebSocket
+from loguru import logger
+
+from app.db import get_session, Room, RoomSessionMapping
+from app.db.redis import expire_time_7_day
 
 
 async def create_room(session_id, room_name=""):
@@ -27,7 +30,7 @@ async def create_room(session_id, room_name=""):
             )
             session.add(room_session_mapping)
             session.commit()
-        return room.id,room.room_name
+        return room.id, room.room_name
 
 
 async def get_room(room_name):
@@ -51,8 +54,10 @@ async def get_room_session(room_name):
 
 room_user2connects: dict[str, WebSocket] = {}
 
+
 def set_room_user_connect(conn_id, ws_conn):
     room_user2connects[conn_id] = ws_conn
+
 
 async def create_user_connect(conn_id, user_name, room_name):
     from app.db.redis import redis_conn, expire_time_7_day
@@ -176,7 +181,7 @@ async def on_room_message(conn_id, room_name, message):
                     ws_conn.close(1011)
                     logger.error(f"{conn_id} 断开连接,roomer:{room_name},err:{e}")
     if msg_type == "muteUser":
-    #     user = redis_conn.get(f"tgproxy:session:{conn_id}")
+        #     user = redis_conn.get(f"tgproxy:session:{conn_id}")
         muted_user = False
         for conn_id, ws_conn in room_user2connects.items():
             if conn_id == message["id"]:
@@ -207,3 +212,9 @@ async def on_room_message(conn_id, room_name, message):
             datetime.now().timestamp(),
             expire_time_7_day,
         )
+
+
+async def set_live_room(room_name, live_name):
+    from app.db.redis import redis_conn
+    redis_conn.set(f"tgproxy:live_room:{room_name}", live_name, expire_time_7_day)
+

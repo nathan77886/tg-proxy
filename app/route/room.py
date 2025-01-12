@@ -1,10 +1,12 @@
+import os
 from typing import Dict
 
+import requests
+from fastapi import Body, Query, WebSocket, WebSocketDisconnect, Request, HTTPException
+from loguru import logger
 from pydantic import Field, BaseModel
 
 from app import app
-import requests
-import os
 from app.model.room import (
     create_room as create_room_db,
     get_room_session,
@@ -12,10 +14,9 @@ from app.model.room import (
     create_user_connect,
     on_room_message,
     on_websocket_disconnect,
+    set_live_room
 )
-from loguru import logger
 from app.utils.ice_server import get_ice_server
-from fastapi import Body, Query, WebSocket, WebSocketDisconnect, Request, HTTPException
 
 
 def get_cf_headers():
@@ -26,8 +27,13 @@ def get_cf_headers():
     return headers
 
 
+class RoomCreateRequest(BaseModel):
+    nick_name: str = Field()
+    live_room: bool = Field()
+
+
 @app.post("/room/create")
-async def create_room(request: Request):
+async def create_room(request: Request, body: RoomCreateRequest = Body()):
     """Create a new room."""
     app_id = os.getenv("APP_ID")
 
@@ -40,6 +46,8 @@ async def create_room(request: Request):
     data = res.json()
     session_id = data["sessionId"]
     room_id, room_name = await create_room_db(session_id)
+    if body.live_room:
+        await set_live_room(room_name, body.nick_name)
     return {"room_id": room_id, "sessionId": session_id, "room_name": room_name}
 
 
@@ -48,6 +56,12 @@ async def get_room_session_by_room_name(room_name: str):
     """Get the session id of a room."""
     session_id = await get_room_session(room_name)
     return {"sessionId": session_id}
+
+@app.get("/room/live/player/{room_name}")
+async def get_room_live_player(room_name: str):
+    from app.db.redis import redis_conn
+    player_name = redis_conn.get(f"tgproxy:live_room:{room_name}")
+    return {"player": player_name}
 
 
 @app.get("/room/session/tracks/{session_id}")
@@ -85,6 +99,7 @@ class RoomConfigRequest(BaseModel):
         {},
         description="Extra parameters to be passed to the API, in JSON format",
     )
+
 
 @app.put("/room/session/tracks/{session_id}/renegotiate")
 async def renegotiate_room_tracks(session_id: str, request: Request):
@@ -124,10 +139,10 @@ async def load_room_config(body: RoomConfigRequest = Body()):
         and os.getenv("FEEDBACK_QUEUE")
         and os.getenv("FEEDBACK_STORAGE")
     )
-    max_webcam_framerate = os.getenv("MAX_WEBCAM_FRAMERATE",24)
-    max_webcam_bitrate = os.getenv("MAX_WEBCAM_BITRATE",1200000)
-    max_webcam_quality_level = os.getenv("MAX_WEBCAM_QUALITY_LEVEL",1080)
-    max_api_history = os.getenv("MAX_API_HISTORY",100)
+    max_webcam_framerate = os.getenv("MAX_WEBCAM_FRAMERATE", 24)
+    max_webcam_bitrate = os.getenv("MAX_WEBCAM_BITRATE", 1200000)
+    max_webcam_quality_level = os.getenv("MAX_WEBCAM_QUALITY_LEVEL", 1080)
+    max_api_history = os.getenv("MAX_API_HISTORY", 100)
     return {
         "mode": body.mode,
         "userDirectoryUrl": os.getenv("USER_DIRECTORY_URL"),
@@ -143,7 +158,7 @@ async def load_room_config(body: RoomConfigRequest = Body()):
 
 
 @app.websocket("/room/keep/{user_name}/parties/rooms/{room_name}")
-async def keep_room(websocket: WebSocket, room_name: str, user_name: str, _pk:str=Query()):
+async def keep_room(websocket: WebSocket, room_name: str, user_name: str, _pk: str = Query()):
     await websocket.accept()
     if user_name == "":
         await websocket.close()
