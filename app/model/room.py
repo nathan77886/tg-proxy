@@ -15,11 +15,22 @@ async def create_room(room_name=""):
         ## 随机8位字符串
         room_name = "".join(random.sample(string.ascii_letters + string.digits, 8))
     with get_session() as session:
-        ## 创建房间和映射
-        room = Room.create_room(room_name)
-        session.add(room)
-        session.commit()
-        return room.id, room.room_name
+        room = (
+            session.query(RoomSessionMapping)
+            .filter(RoomSessionMapping.session_id == session_id)
+            .first()
+        )
+        if room is None:
+            ## 创建房间和映射
+            room = Room.create_room(room_name)
+            session.add(room)
+            session.commit()
+            room_session_mapping = RoomSessionMapping.create_room_session_mapping(
+                room.id, session_id
+            )
+            session.add(room_session_mapping)
+            session.commit()
+        return room.id,room.room_name
 
 
 async def get_room(room_name):
@@ -93,6 +104,14 @@ async def on_websocket_disconnect(conn_id, room_name):
         del room_user2connects[conn_id]
     await broadcast_room_state(room_name)
     logger.info(f"{conn_id} 断开连接,roomer:{room_name}")
+    ## 获取房间中剩余用户
+    room_num = redis_conn.hlen(room2conn_rkey)
+    if room_num == 0:
+        with get_session() as session:
+            session.query(Room).filter(Room.room_name == room_name).update(
+                {Room.status: 2}
+            )
+            logger.info(f"{room_name} 房间已关闭")
 
 
 async def broadcast_room_state(room_name):
