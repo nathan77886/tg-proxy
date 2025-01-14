@@ -27,7 +27,7 @@ async def create_room(session_id, room_name=""):
             )
             session.add(room_session_mapping)
             session.commit()
-        return room.id,room.room_name
+        return room.id, room.room_name
 
 
 async def get_room(room_name):
@@ -51,8 +51,10 @@ async def get_room_session(room_name):
 
 room_user2connects: dict[str, WebSocket] = {}
 
+
 def set_room_user_connect(conn_id, ws_conn):
     room_user2connects[conn_id] = ws_conn
+
 
 async def create_user_connect(conn_id, user_name, room_name):
     from app.db.redis import redis_conn, expire_time_7_day
@@ -98,6 +100,14 @@ async def on_websocket_disconnect(conn_id, room_name):
     del room_user2connects[conn_id]
     await broadcast_room_state(room_name)
     logger.info(f"{conn_id} 断开连接,roomer:{room_name}")
+    ## 获取房间中剩余用户
+    room_num = redis_conn.hlen(room2conn_rkey)
+    if room_num == 0:
+        with get_session() as session:
+            session.query(Room).filter(Room.room_name == room_name).update(
+                {Room.status: 2}
+            )
+            logger.info(f"{room_name} 房间已关闭")
 
 
 async def broadcast_room_state(room_name):
@@ -175,7 +185,7 @@ async def on_room_message(conn_id, room_name, message):
                     ws_conn.close(1011)
                     logger.error(f"{conn_id} 断开连接,roomer:{room_name},err:{e}")
     if msg_type == "muteUser":
-    #     user = redis_conn.get(f"tgproxy:session:{conn_id}")
+        #     user = redis_conn.get(f"tgproxy:session:{conn_id}")
         muted_user = False
         for conn_id, ws_conn in room_user2connects.items():
             if conn_id == message["id"]:
