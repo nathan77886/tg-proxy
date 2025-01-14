@@ -1,13 +1,16 @@
-from app.db import get_session, Room, RoomSessionMapping
+import json
 import random
 import string
 from datetime import datetime
-import json
-from loguru import logger
+
 from fastapi import WebSocket
+from loguru import logger
+
+from app.db import get_session, Room, RoomSessionMapping
+from app.db.redis import expire_time_7_day
 
 
-async def create_room(session_id, room_name=""):
+async def create_room(room_name=""):
     if room_name == "":
         ## 随机8位字符串
         room_name = "".join(random.sample(string.ascii_letters + string.digits, 8))
@@ -27,7 +30,7 @@ async def create_room(session_id, room_name=""):
             )
             session.add(room_session_mapping)
             session.commit()
-        return room.id, room.room_name
+        return room.id,room.room_name
 
 
 async def get_room(room_name):
@@ -60,7 +63,7 @@ async def create_user_connect(conn_id, user_name, room_name):
     from app.db.redis import redis_conn, expire_time_7_day
 
     user = redis_conn.get(f"tgproxy:session-{conn_id}")
-    if user == None:
+    if user is None:
         new_user_session = {
             "id": conn_id,
             "name": user_name,
@@ -97,7 +100,8 @@ async def on_websocket_disconnect(conn_id, room_name):
     redis_conn.delete(f"tgproxy:heartbeat:${conn_id}")
     room2conn_rkey = f"tgproxy:room:session:{room_name}"
     redis_conn.hdel(room2conn_rkey, conn_id)
-    del room_user2connects[conn_id]
+    if conn_id in room_user2connects:
+        del room_user2connects[conn_id]
     await broadcast_room_state(room_name)
     logger.info(f"{conn_id} 断开连接,roomer:{room_name}")
     ## 获取房间中剩余用户
@@ -125,13 +129,13 @@ async def broadcast_room_state(room_name):
     }
     for cid, user_state in room_users.items():
         room_state["state"]["users"].append(json.loads(user_state))
+    for cid, user_state in room_users.items():
         conn_id = cid.decode()
         if conn_id in room_user2connects:
             ws_conn = room_user2connects[conn_id]
             try:
                 await ws_conn.send_json(room_state)
             except Exception as e:
-                ws_conn.close(1011)
                 logger.error(f"{conn_id} 断开连接,roomer:{room_name},err:{e}")
                 did_someone_quit = True
                 redis_conn.hdel(room2conn_rkey, conn_id)
@@ -148,14 +152,14 @@ async def broadcast_room_state(room_name):
 async def on_room_message(conn_id, room_name, message):
     from app.db.redis import redis_conn, expire_time_7_day
 
-    msg_type = message["data"]
+    msg_type = message["type"]
     if msg_type == "userLeft":
         if conn_id in room_user2connects:
-            room_user2connects[conn_id].close(1000)
+            await room_user2connects[conn_id].close(1000)
         await on_websocket_disconnect(conn_id, room_name)
         return
     if msg_type == "userUpdate":
-        user_data = message["data"]
+        user_data = message["user"]
         user_data["room_name"] = room_name
         redis_conn.set(
             f"tgproxy:session:{conn_id}",
@@ -216,3 +220,9 @@ async def on_room_message(conn_id, room_name, message):
             datetime.now().timestamp(),
             expire_time_7_day,
         )
+
+
+async def set_live_room(room_name, live_name):
+    from app.db.redis import redis_conn
+    redis_conn.set(f"tgproxy:live_room:{room_name}", live_name, expire_time_7_day)
+
