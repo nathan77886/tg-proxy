@@ -129,6 +129,19 @@ async def broadcast_room_state(room_name):
     if did_someone_quit:
         await broadcast_room_state(room_name)
 
+async def get_live_player_data(room_name):
+    from app.db.redis import redis_conn
+    room2player = f"tgproxy:live_room:{room_name}"
+    live_player = redis_conn.get(room2player)
+    if live_player is None:
+        return None
+    room2conn_rkey = f"tgproxy:room:session:{room_name}"
+    room_conns = redis_conn.hgetall(room2conn_rkey)
+    for _, user_state in room_conns.items():
+        user_data = json.load(user_state)
+        if user_data["name"] == live_player:
+            return user_data
+    return None
 
 async def on_room_message(conn_id, room_name, message):
     from app.db.redis import redis_conn, expire_time_7_day
