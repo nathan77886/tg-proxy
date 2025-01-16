@@ -2,10 +2,19 @@ import asyncio
 import uuid
 from telegram import constants
 from fastapi import WebSocket
-from ..model import set_channel, remove_channel
+from ..model import set_channel, remove_channel, on_event_stream
 from loguru import logger
 from ..bot import *
 from .. import app
+from fastapi.responses import StreamingResponse
+
+
+@app.get("/sse/{group_id}/barrage")
+async def on_sse_barrage_open(group_id: str):
+    return StreamingResponse(
+        on_event_stream(group_id), media_type="text/event-stream"
+    )
+
 
 @app.websocket("/ws/{group_id}/barrage")
 async def on_ws_barrage_open(websocket: WebSocket, group_id: str):

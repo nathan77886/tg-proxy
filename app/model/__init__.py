@@ -1,8 +1,21 @@
-from typing import List
 from fastapi import WebSocket
 from loguru import logger
+from typing import Dict
+from collections import defaultdict
+import asyncio
+import json
 
 group_channel = {}
+
+# 用于存储每个 group_id 的队列和连接
+_message_queues: Dict[str, asyncio.Queue] = defaultdict(asyncio.Queue)
+
+async def on_event_stream(group_id):
+    queue = _message_queues[group_id]
+    while True:
+        # 从队列中获取消息并发送到客户端
+        message = await queue.get()
+        yield json.dumps(message)
 
 
 def set_channel(group_id, channel: WebSocket, random_id):
@@ -43,3 +56,5 @@ async def dispatch(group_id, msg):
             await ws.send_json({"type": "text", "data": msg})
         except Exception as e:
             logger.error(e)
+    
+    await _message_queues[group_id].put(msg)
