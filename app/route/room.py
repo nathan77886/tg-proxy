@@ -14,7 +14,7 @@ from app.model.room import (
     create_user_connect,
     on_room_message,
     on_websocket_disconnect,
-    set_live_room
+    set_live_room, get_live_player_data
 )
 from app.utils.ice_server import get_ice_server
 
@@ -39,7 +39,7 @@ async def create_room(request: Request, body: RoomCreateRequest = Body()):
     if body.live_room:
         await set_live_room(room_name, body.nick_name)
         logger.info(f"创建直播模式房间:{room_name},主播:{body.live_room}")
-    return {"room_id": room_id, "room_name": room_name, "live_name":body.live_room}
+    return {"room_id": room_id, "room_name": room_name, "live_name": body.live_room}
 
 
 @app.post("/room/session/{room_name}/create")
@@ -64,11 +64,15 @@ async def get_room_session_by_room_name(room_name: str):
     session_id = await get_room_session(room_name)
     return {"sessionId": session_id}
 
+
 @app.get("/room/live/player/{room_name}")
 async def get_room_live_player(room_name: str):
     from app.db.redis import redis_conn
     player_name = redis_conn.get(f"tgproxy:live_room:{room_name}")
-    return {"player": player_name}
+    live_player_data = await get_live_player_data(room_name)
+    if live_player_data is None:
+        return {"player": player_name}
+    return {"player": player_name, **live_player_data}
 
 
 @app.get("/room/session/tracks/{session_id}")
@@ -106,7 +110,8 @@ class RoomConfigRequest(BaseModel):
         {},
         description="Extra parameters to be passed to the API, in JSON format",
     )
-    room_name:str = Field(..., description="Name of the room")
+    room_name: str = Field(..., description="Name of the room")
+
 
 @app.put("/room/session/tracks/{session_id}/renegotiate")
 async def renegotiate_room_tracks(session_id: str, request: Request):
