@@ -21,7 +21,16 @@ async def on_text_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ):
         return
     group_id = update.effective_chat.id
-    await dispatch(group_id, update.message.text)
+    await dispatch(
+        group_id,
+        {
+            "group_id": update.message.chat_id,
+            "user_id": update.message.from_user.id,
+            "message": update.message.text,
+            "message_id": update.message.message_id,
+            "message_date": update.message.date.timestamp(),
+        },
+    )
 
 
 async def on_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -33,7 +42,9 @@ async def on_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"你的id是:{user_id}\n 群组id是:<code>{chat_id}</code>", parse_mode="HTML"
     )
 
+
 import os
+
 run_bot = os.environ.get("run_bot")
 
 if not run_bot:
