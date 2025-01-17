@@ -8,12 +8,14 @@ import json
 # 用于存储每个 group_id 的队列和连接
 _message_queues: Dict[str, asyncio.Queue] = defaultdict(asyncio.Queue)
 
+
 async def on_event_stream(group_id):
-    queue = _message_queues[group_id]
+    yield json.dumps({"heatbeat": True})
     while True:
         # 从队列中获取消息并发送到客户端
-        message = await queue.get()
+        message = _message_queues[group_id].get()
         yield json.dumps(message)
+
 
 # 派发事件
 async def dispatch(group_id, msg):
