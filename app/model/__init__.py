@@ -13,7 +13,7 @@ async def on_event_stream(group_id):
     yield json.dumps({"heatbeat": True})
     while True:
         # 从队列中获取消息并发送到客户端
-        message = _message_queues[group_id].get()
+        message = await _message_queues[group_id].get()
         yield json.dumps(message)
 
 
