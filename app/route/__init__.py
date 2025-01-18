@@ -1,8 +1,8 @@
-from ..model import on_event_stream
-from loguru import logger
-from ..bot import *
-from .. import app
 from fastapi.responses import StreamingResponse
+
+from .. import app
+from ..model import on_event_stream
+
 
 # https://tg-proxy.coinpaas.com/sse/-4750287705/barrage
 @app.get("/sse/{group_id}/barrage")
