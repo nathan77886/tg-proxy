@@ -5,6 +5,7 @@ import requests
 from fastapi import Body, Query, WebSocket, WebSocketDisconnect, Request, HTTPException
 from loguru import logger
 from pydantic import Field, BaseModel
+from starlette.websockets import WebSocketState
 
 from app import app
 from app.model.room import (
@@ -184,6 +185,8 @@ async def keep_room(websocket: WebSocket, room_name: str, user_name: str, _pk: s
     await create_user_connect(connect_id, user_name, room_name)
     try:
         while True:
+            if websocket.application_state != WebSocketState.CONNECTED:
+                break
             data = await websocket.receive_json()
             print(f"{user_name} receive:" + str(data))
             await on_room_message(connect_id, room_name, data)
