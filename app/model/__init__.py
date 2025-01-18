@@ -9,7 +9,8 @@ _message_queues: Dict[str, List[asyncio.Queue]] = {}
 
 
 async def on_event_stream(group_id):
-    yield f"data: {'hello':'1'}\n\n"
+    hello = json.dumps({"hello": "1"})
+    yield f"data: {hello}\n\n"
     g_id = str(group_id)
     message_queue = asyncio.Queue()
     if g_id not in _message_queues:
