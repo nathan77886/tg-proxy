@@ -9,7 +9,7 @@ import json
 _message_queues: Dict[str, List[asyncio.Queue]] = {}
 
 async def on_event_stream(group_id):
-    yield json.dumps({"heatbeat": True})
+    yield f"data: {'hello':'1'}\n\n"
     g_id = str(group_id)
     message_queue = asyncio.Queue()
     if g_id not in _message_queues:
@@ -18,7 +18,7 @@ async def on_event_stream(group_id):
     while True:
         # 从队列中获取消息并发送到客户端
         message = await message_queue.get()
-        yield json.dumps(message)
+        yield message
 
 
 # 派发事件
@@ -27,5 +27,7 @@ async def dispatch(group_id, msg):
     logger.info(f"dispatch msg to {g_id}")
     if g_id not in _message_queues:
         return
+    by = json.dumps(msg)
+    steam_data =  f"data: {by}\n\n"
     for message_queue in _message_queues[g_id]:
-        await message_queue.put(msg)
+        await message_queue.put(steam_data)
