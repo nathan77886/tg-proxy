@@ -146,7 +146,7 @@ async def get_live_player_data(room_name):
     room2conn_rkey = f"tgproxy:room:session:{room_name}"
     room_conns = redis_conn.hgetall(room2conn_rkey)
     for _, user_state in room_conns.items():
-        user_data = json.load(user_state)
+        user_data = json.loads(user_state)
         if user_data["name"] == live_player:
             return user_data
     return None
