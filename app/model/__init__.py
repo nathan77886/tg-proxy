@@ -1,22 +1,23 @@
-from fastapi import WebSocket
 from loguru import logger
-from typing import Dict
+from typing import Dict, List
 from collections import defaultdict
 import asyncio
 import json
 
-# 用于存储每个 group_id 的队列和连接
-_message_queues: Dict[str, asyncio.Queue] = defaultdict(asyncio.Queue)
 
+# 用于存储每个 group_id 对应的 SSE 客户端连接列表
+_message_queues: Dict[str, List[asyncio.Queue]] = {}
 
 async def on_event_stream(group_id):
     yield json.dumps({"heatbeat": True})
     g_id = str(group_id)
-    if _message_queues.get(g_id) is None:
-        _message_queues[g_id] = asyncio.Queue()
+    message_queue = asyncio.Queue()
+    if g_id not in _message_queues:
+        _message_queues[g_id] = []
+    _message_queues[g_id].append(message_queue)
     while True:
         # 从队列中获取消息并发送到客户端
-        message = await _message_queues[g_id].get()
+        message = await message_queue.get()
         yield json.dumps(message)
 
 
@@ -24,6 +25,7 @@ async def on_event_stream(group_id):
 async def dispatch(group_id, msg):
     g_id = str(group_id)
     logger.info(f"dispatch msg to {g_id}")
-    if _message_queues.get(g_id) is None:
-        _message_queues[g_id] = asyncio.Queue()
-    await _message_queues[g_id].put(msg)
+    if g_id not in _message_queues:
+        return
+    for message_queue in _message_queues[g_id]:
+        await message_queue.put(msg)
