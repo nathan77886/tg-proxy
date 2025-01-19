@@ -9,8 +9,8 @@ _message_queues: Dict[str, List[asyncio.Queue]] = {}
 
 
 async def on_event_stream(group_id):
-    hello = json.dumps({"hello": "1"})
-    yield f"data: {hello}\n\n"
+    heatbeat = json.dumps({"heatbeat": "1"})
+    yield f"data: {heatbeat}\n\n"
     g_id = str(group_id)
     message_queue = asyncio.Queue()
     if g_id not in _message_queues:
@@ -18,7 +18,12 @@ async def on_event_stream(group_id):
     _message_queues[g_id].append(message_queue)
     while True:
         # 从队列中获取消息并发送到客户端
-        message = await message_queue.get()
+        message = await message_queue.get_nowait()
+        if message is None:
+            ## 十秒后发心跳
+            await asyncio.sleep(1)
+            yield f"data: {heatbeat}\n\n"
+            continue
         yield message
 
 
