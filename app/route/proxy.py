@@ -19,13 +19,13 @@ async def get_avatar(user_id: str):
     from app.bot import application
 
     photos = await application.bot.get_user_profile_photos(user_id)
-    logger.info(f"get user {user_id} avatar {photos.to_json()}")
+    # logger.info(f"get user {user_id} avatar {photos.to_json()}")
     i_photos = photos.photos[0][0]
     file_id = i_photos.file_id
     photo_file = await application.bot.get_file(file_id)
     file_path = os.path.join("/avatar", f"{user_id}_avatar.jpg")
     # 下载文件并保存到本地
-    photo_file.download(file_path)
+    await photo_file.download_to_drive(file_path)
     return FileResponse(
         file_path,
         headers={"Content-Disposition": "inline; filename=avatar.jpg"},
