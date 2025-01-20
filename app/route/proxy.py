@@ -14,7 +14,7 @@ async def on_sse_barrage_open(group_id: str):
 
 
 ## 头像
-@app.get("/proxy/avatar/{user_id}")
+@app.get("/proxy/avatar/{user_id}.jpg")
 async def get_avatar(user_id: str):
     from app.bot import application
 
