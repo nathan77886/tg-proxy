@@ -19,8 +19,8 @@ async def get_avatar(user_id: str):
     from app.bot import application
 
     photos = await application.bot.get_user_profile_photos(user_id)
-    i_photos = photos[0]
-    logger.info(f"get user {user_id} avatar {photos}")
+    logger.info(f"get user {user_id} avatar {photos.to_json()}")
+    i_photos = photos.photos[0][0]
     file_id = i_photos.file_id
     photo_file = await application.bot.get_file(file_id)
     file_path = os.path.join("/avatar", f"{user_id}_avatar.jpg")
