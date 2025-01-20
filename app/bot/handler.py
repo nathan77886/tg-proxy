@@ -15,11 +15,6 @@ from ..model import dispatch
 
 
 async def on_text_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if (
-        update.effective_chat.type != constants.ChatType.SUPERGROUP
-        and update.effective_chat.type != constants.ChatType.GROUP
-    ):
-        return
     group_id = update.effective_chat.id
     await dispatch(
         group_id,
