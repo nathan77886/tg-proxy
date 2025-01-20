@@ -18,12 +18,11 @@ async def on_event_stream(group_id):
     _message_queues[g_id].append(message_queue)
     while True:
         # 从队列中获取消息并发送到客户端
-        message = await message_queue.get_nowait()
-        if message is None:
-            ## 十秒后发心跳
-            await asyncio.sleep(1)
+        if message_queue.empty():
             yield f"data: {heatbeat}\n\n"
+            await asyncio.sleep(1)
             continue
+        message = await message_queue.get()
         yield message
 
 
