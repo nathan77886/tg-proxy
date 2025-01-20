@@ -23,7 +23,7 @@ async def get_avatar(user_id: str):
     i_photos = photos.photos[0][0]
     file_id = i_photos.file_id
     photo_file = await application.bot.get_file(file_id)
-    file_path = os.path.join("/avatar", f"{user_id}_avatar.jpg")
+    file_path = os.path.join("avatar", f"{user_id}_avatar.jpg")
     # 下载文件并保存到本地
     await photo_file.download_to_drive(file_path)
     return FileResponse(
