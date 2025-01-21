@@ -38,6 +38,24 @@ async def on_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 
+# 直播插件
+async def on_live_plugin(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = update.effective_chat.id
+    await update.effective_chat.send_message(
+        "直播插件页面",
+        reply_markup=InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton(
+                        "bilibili",
+                        url="https://tgvideo.coinpaas.com/proxy?tg_group_id=" + chat_id,
+                    ),
+                ]
+            ]
+        ),
+    )
+
+
 import os
 
 run_bot = os.environ.get("run_bot")
@@ -45,7 +63,8 @@ run_bot = os.environ.get("run_bot")
 if not run_bot:
     logger.info("handler bot")
     application.add_handler(CommandHandler("id", on_id))
-
+    application.add_handler(CommandHandler("live", on_live_plugin))
+    
     application.add_handler(MessageHandler(filters.TEXT, on_text_message, False))
     from .error_handler import error_handler
 
