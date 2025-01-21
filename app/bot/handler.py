@@ -47,7 +47,7 @@ async def on_live_plugin(update: Update, context: ContextTypes.DEFAULT_TYPE):
             [
                 [
                     InlineKeyboardButton(
-                        "bilibili",
+                        "插件页面",
                         url=f"https://tgvideo.coinpaas.com/proxy?tg_group_id={chat_id}",
                     ),
                 ]
