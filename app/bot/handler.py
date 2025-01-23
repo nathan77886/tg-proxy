@@ -62,10 +62,8 @@ async def on_gift(update: Update, context: CallbackContext):
     await dispatch(
         chat_id,
         {
-            "group_id": update.message.chat_id,
-            "user_id": update.message.from_user.id,
-            "message_id": update.message.message_id,
-            "message_date": update.message.date.timestamp(),
+            "group_id": chat_id,
+            "user_id": update.effective_user.id,
             "gift_id": 1
         },
     )
