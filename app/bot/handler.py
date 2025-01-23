@@ -70,6 +70,7 @@ async def on_gift(update: Update, context: CallbackContext):
             "gift_id": 1
         },
     )
+    await update.callback_query.answer()
 
 
 import os
