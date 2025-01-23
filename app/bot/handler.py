@@ -50,9 +50,25 @@ async def on_live_plugin(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         "插件页面",
                         url=f"https://tgvideo.coinpaas.com/proxy?tg_group_id={chat_id}",
                     ),
-                ]
+                ],
+                [InlineKeyboardButton("送礼物", callback_data="gift")],
             ]
         ),
+    )
+
+
+async def on_gift(update: Update, context: CallbackContext):
+    chat_id = update.effective_chat.id
+    await dispatch(
+        chat_id,
+        {
+            "group_id": update.message.chat_id,
+            "user_id": update.message.from_user.id,
+            "message": update.message.text,
+            "message_id": update.message.message_id,
+            "message_date": update.message.date.timestamp(),
+            "gift_id": 1
+        },
     )
 
 
@@ -64,7 +80,8 @@ if not run_bot:
     logger.info("handler bot")
     application.add_handler(CommandHandler("id", on_id))
     application.add_handler(CommandHandler("live", on_live_plugin))
-    
+
+    application.add_handler(CallbackQueryHandler(on_gift, "gift"))
     application.add_handler(MessageHandler(filters.TEXT, on_text_message, False))
     from .error_handler import error_handler
 
